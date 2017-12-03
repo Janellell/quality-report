@@ -121,3 +121,18 @@ class TestNGTestReportTest(unittest.TestCase):
         # Points to the XML at the moment because the TestNG HTML report isn't stored at a predictable location.
         self.assertEqual(['http://server/testng/testng.xml'],
                          self.__testng.metric_source_urls('http://server/testng/testng.xml'))
+
+    def test_duration(self):
+        """ Test the test duration. """
+        self.__opener.contents = '''<testng-results skipped="0" failed="1" ignored="3" total="6" passed="2">
+        <suite name="TestSuite" duration-ms="6548" started-at="2017-09-05T14:18:23Z" finished-at="2017-09-05T14:18:29Z">
+        <test name="engine" duration-ms="3474" started-at="2017-09-05T14:18:23Z" finished-at="2017-09-05T14:18:26Z">
+        <class name="CreatingARegistratie"></class>
+        </test>
+        <test name="beheer" duration-ms="6548" started-at="2017-09-05T14:18:23Z" finished-at="2017-09-05T14:18:29Z">
+        <class name="LookingUpARegistratie"></class>
+        <class name="LookingUpRegistratiesOverview"></class>
+        </test>
+        </suite>
+        </testng-results>'''
+        self.assertEqual(datetime.timedelta(seconds=6), self.__testng.duration('url'))

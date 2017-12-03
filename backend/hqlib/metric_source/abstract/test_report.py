@@ -21,7 +21,7 @@ from typing import Callable, Sequence
 
 from .. import url_opener
 from ... import domain
-from ...typing import DateTime
+from ...typing import DateTime, TimeDelta
 
 
 class TestReport(domain.MetricSource):
@@ -41,6 +41,11 @@ class TestReport(domain.MetricSource):
         metric_source_ids = self._expand_metric_source_id_reg_exps(*metric_source_ids)
         return min([self._report_datetime(metric_source_id) for metric_source_id in metric_source_ids]) \
             if metric_source_ids else datetime.datetime.min
+
+    @functools.lru_cache(maxsize=1024)
+    def duration(self, *metric_source_ids: str) -> TimeDelta:
+        """ Return the duration of the reports. """
+        raise NotImplementedError
 
     @functools.lru_cache(maxsize=1024)
     def passed_tests(self, *metric_source_ids: str) -> int:
@@ -87,6 +92,11 @@ class TestReport(domain.MetricSource):
 
 class UnitTestReport(TestReport):
     """ Metric source for unit test reports. """
+    @functools.lru_cache(maxsize=1024)
+    def duration(self, *metric_source_ids: str) -> TimeDelta:
+        """ Return the duration of the reports. """
+        raise NotImplementedError
+
     def _report_datetime(self, metric_source_id: str) -> DateTime:
         """ Return the date and time of the report. """
         raise NotImplementedError
@@ -102,6 +112,11 @@ class UnitTestReport(TestReport):
 
 class SystemTestReport(TestReport):
     """ Metric source for system test reports. """
+    @functools.lru_cache(maxsize=1024)
+    def duration(self, *metric_source_ids: str) -> TimeDelta:
+        """ Return the duration of the reports. """
+        raise NotImplementedError
+
     def _report_datetime(self, metric_source_id: str) -> DateTime:
         """ Return the date and time of the report. """
         raise NotImplementedError
