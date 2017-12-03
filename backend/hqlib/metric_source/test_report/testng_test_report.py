@@ -46,42 +46,39 @@ class TestNGTestReport(test_report.TestReport):
 
     def _report_datetime(self, metric_source_id: str) -> DateTime:
         """ Return the date and time of the report. """
-        try:
-            test_suites = self.__test_suites(metric_source_id)
-        except UrlOpener.url_open_exceptions:
-            return datetime.datetime.min
-        except xml.etree.cElementTree.ParseError:
-            return datetime.datetime.min
-        if test_suites:
-            timestamps = [test_suite.get('started-at') for test_suite in test_suites]
-            date_times = [utils.parse_iso_datetime(timestamp) for timestamp in timestamps if timestamp]
-            if date_times:
-                return min(date_times)
+        date_times = self.__time_stamps(metric_source_id)
+        if date_times:
+            return min(date_times)
+        else:
             logging.error("Couldn't find timestamps in test suites in: %s", report_url)
             return datetime.datetime.min
-        logging.error("Couldn't find test suites in: %s", report_url)
-        return datetime.datetime.min
 
     def duration(self, *metric_source_ids: str) -> TimeDelta:
         """ Return the duration of the test. """
+        date_times = self.__time_stamps(*metric_source_ids)
+        if date_times:
+            return max(date_times) - min(date_times)
+        else:
+            logging.error("Couldn't find timestamps in test suites in: %s", report_urls)
+            return datetime.timedelta(-1)
+
+    def __time_stamps(self, *metric_source_ids) -> Sequence[DateTime]:
+        """ Return the timestamps in the test suites. """
         timestamps = []
         for report_url in metric_source_ids:
             try:
                 test_suites = self.__test_suites(report_url)
             except UrlOpener.url_open_exceptions:
-                return datetime.timedelta(-1)
+                return []
             except xml.etree.cElementTree.ParseError:
-                return datetime.timedelta(-1)
+                return []
             if test_suites:
                 timestamps.extend([test_suite.get('started-at') for test_suite in test_suites] +
                                   [test_suite.get('finished-at') for test_suite in test_suites])
             else:
+                return []
+        return [utils.parse_iso_datetime(timestamp) for timestamp in timestamps if timestamp]
                 logging.warning("Couldn't find test suites in: %s", report_url)
-        date_times = [utils.parse_iso_datetime(timestamp) for timestamp in timestamps if timestamp]
-        if date_times:
-            return max(date_times) - min(date_times)
-        logging.error("Couldn't find timestamps in test suites in: %s", metric_source_ids)
-        return datetime.timedelta(-1)
 
     def __test_count(self, report_url: str, result_type: str) -> int:
         """ Return the number of tests with the specified result in the test report. """
