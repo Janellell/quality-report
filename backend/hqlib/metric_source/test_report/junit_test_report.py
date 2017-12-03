@@ -25,7 +25,7 @@ from typing import List, Sequence
 from ..abstract import test_report
 from ..url_opener import UrlOpener
 from ... import utils
-from ...typing import DateTime
+from ...typing import DateTime, TimeDelta
 
 
 class JunitTestReport(test_report.TestReport):
@@ -57,34 +57,43 @@ class JunitTestReport(test_report.TestReport):
 
     def _report_datetime(self, metric_source_id: str) -> DateTime:
         """ Return the date and time of the report. """
-        try:
-            test_suites = self.__test_suites(metric_source_id)
-        except UrlOpener.url_open_exceptions:
+        timestamps = self.__time_stamps(metric_source_id)
+        if timestamps:
+            return min(timestamps)
+        else:
+            logging.error("Couldn't find timestamps in test suites in: %s", report_url)
             return datetime.datetime.min
-        except xml.etree.cElementTree.ParseError:
-            return datetime.datetime.min
-        if test_suites:
-            timestamps = [test_suite.get('timestamp') for test_suite in test_suites]
-            date_times = [utils.parse_iso_datetime(timestamp + 'Z') for timestamp in timestamps if timestamp]
-            if date_times:
-                return min(date_times)
-            logging.warning("Couldn't find timestamps in test suites in: %s", metric_source_id)
-            return datetime.datetime.min
-        logging.warning("Couldn't find test suites in: %s", metric_source_id)
-        return datetime.datetime.min
+
+    def duration(self, *metric_source_ids: str) -> TimeDelta:
+        """ Return the duration of the report. """
+        timestamps = self.__time_stamps(*metric_source_ids)
+        if timestamps:
+            return max(timestamps) - min(timestamps)
+        else:
+            logging.error("Couldn't find test suites in: %s", report_urls)
+            return datetime.timedelta(-1)
+
+    def __time_stamps(self, *metric_source_ids: str) -> Sequence[DateTime]:
+        """ Return the time stamps in the suites. """
+        timestamps = []
+        for report_url in metric_source_ids:
+            for test_suite in self.__test_suites(report_url):
+                timestamp_str, time_str = test_suite.get('timestamp'), test_suite.get('time')
+                if None in (timestamp_str, time_str):
+                    return []  # One or both of the needed attributes are missing
+                timestamp = utils.parse_iso_datetime(timestamp_str + 'Z')
+                timedelta = datetime.timedelta(seconds=float(time_str))
+                timestamps.extend([timestamp, timestamp + timedelta])
+        return timestamps
 
     def __test_count(self, report_url: str, result_type: str) -> int:
         """ Return the number of tests with the specified result in the test report. """
-        try:
-            test_suites = self.__test_suites(report_url)
-        except UrlOpener.url_open_exceptions:
-            return -1
-        except xml.etree.cElementTree.ParseError:
-            return -1
+        test_suites = self.__test_suites(report_url)
         if test_suites:
             return sum(int(test_suite.get(result_type, 0)) for test_suite in test_suites)
-        logging.warning("Couldn't find test suites in: %s", report_url)
-        return -1
+        else:
+            logging.error("Couldn't find test suites in: %s", report_url)
+            return -1
 
     def __failure_count(self, report_url: str) -> int:
         """ Return the number of test cases that have failures (failed assertions). """
@@ -98,7 +107,12 @@ class JunitTestReport(test_report.TestReport):
 
     def __test_suites(self, report_url: str) -> Sequence[Element]:
         """ Return the test suites in the report. """
-        root = self.__element_tree(report_url)
+        try:
+            root = self.__element_tree(report_url)
+        except UrlOpener.url_open_exceptions:
+            return []
+        except xml.etree.cElementTree.ParseError:
+            return []
         return [root] if root.tag == 'testsuite' else root.findall('testsuite')
 
     def __element_tree(self, report_url: str) -> Element:

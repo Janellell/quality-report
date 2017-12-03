@@ -99,7 +99,7 @@ class JunitTestReportTest(unittest.TestCase):
     def test_report_datetime(self):
         """ Test that the date and time of the test suite is returned. """
         self.__opener.contents = '<testsuites>' \
-                                 '  <testsuite name="Art" timestamp="2016-07-07T12:26:44">' \
+                                 '  <testsuite name="Art" timestamp="2016-07-07T12:26:44" time="45.324">' \
                                  '  </testsuite>' \
                                  '</testsuites>'
         self.assertEqual(datetime.datetime(2016, 7, 7, 12, 26, 44), self.__junit.datetime('url'))
@@ -122,3 +122,29 @@ class JunitTestReportTest(unittest.TestCase):
         """ Test that the urls point to the HTML versions of the reports. """
         self.assertEqual(['http://server/html/htmlReport.html'],
                          self.__junit.metric_source_urls('http://server/junit/junit.xml'))
+
+    def test_duration(self):
+        """ Test the duration of the test. """
+        self.__opener.contents = '<testsuites>' \
+                                 '  <testsuite name="Art" timestamp="2016-07-07T12:26:44" time="45.321">' \
+                                 '  </testsuite>' \
+                                 '</testsuites>'
+        self.assertEqual(datetime.timedelta(seconds=45.321), self.__junit.duration('url'))
+
+    def test_duration_multiple_test_suites(self):
+        """ Test the duration of the test when reading multiple test suites. """
+        self.__opener.contents = '<testsuites>' \
+                                 '  <testsuite name="Art1" timestamp="2016-07-07T12:26:44" time="45.321">' \
+                                 '  </testsuite>' \
+                                 '  <testsuite name="Art2" timestamp="2016-07-07T12:27:44" time="42.341">' \
+                                 '  </testsuite>' \
+                                 '</testsuites>'
+        self.assertEqual(datetime.timedelta(seconds=102.341), self.__junit.duration('url'))
+
+    def test_duration_multiple_test_reports(self):
+        """ Test the duration of the test when reading multiple test reports. """
+        self.__opener.contents = '<testsuites>' \
+                                 '  <testsuite name="Art" timestamp="2016-07-07T12:26:44" time="45.321">' \
+                                 '  </testsuite>' \
+                                 '</testsuites>'
+        self.assertEqual(datetime.timedelta(seconds=45.321), self.__junit.duration('url1', 'url2'))
