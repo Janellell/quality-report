@@ -98,6 +98,19 @@ class JenkinsTestReport(test_report.TestReport):
             json = self.__read_json(metric_source_id, "lastSuccessfulBuild/api/python")
         return datetime.datetime.fromtimestamp(float(json["timestamp"]) / 1000.) if json else datetime.datetime.min
 
+    def duration(self, *report_urls: str):
+        """ Return the duration of the test reports. """
+        if not report_urls:
+            return datetime.timedelta(-1)
+        duration = datetime.timedelta()
+        for report_url in report_urls:
+            json = self.__read_json(utils.url_join(self.url(), "job", report_url, 'lastCompletedBuild/api/python'))
+            if json:
+                duration += datetime.timedelta(seconds=float(json["duration"]))
+            else:
+                return datetime.timedelta(-1)
+        return duration
+
     def __read_json(self, job_name: str, api_postfix: str) -> Optional[Dict[str, Union[int, str]]]:
         """ Return the test results and the timestamp from the url, or None when something goes wrong. """
         api_url = utils.url_join(self.url(), "job", job_name, api_postfix)

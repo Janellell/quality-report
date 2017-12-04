@@ -172,3 +172,16 @@ class JenkinsTestReportTest(unittest.TestCase):
         mock_jenkins_jobs.return_value = [{"name": "job1"}, {"name": "master"}, {"name": "test1"}, {"name": "test2"}]
         jenkins = JenkinsTestReport(url="http://jenkins")
         self.assertEqual(["http://jenkins/job/notfound.*"], jenkins.metric_source_urls("notfound.*"))
+
+   def test_duration(self):
+        """ Test that the test duration is returned. """
+        self.__opener.contents = '{"duration":1.5120007}'
+        self.assertEqual(datetime.timedelta(seconds=1.5120007), self.__jenkins.duration('job/'))
+
+    def test_duration_missing_urls(self):
+        """ Test that the test duration is -1 when no jobs are provided. """
+        self.assertEqual(datetime.timedelta(-1), self.__jenkins.duration())
+
+    def test_duration_with_invalid_data(self):
+        """ Test that the test duration is -1 when the data is invalid. """
+        self.assertEqual(datetime.timedelta(-1), self.__jenkins.duration('raise'))
