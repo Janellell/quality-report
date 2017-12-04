@@ -24,7 +24,7 @@ from distutils.version import LooseVersion
 
 from . import url_opener
 from .. import utils, metric_source
-from ..typing import DateTime, Number
+from ..typing import DateTime, TimeDelta, Number
 
 
 def extract_branch_decorator(func):
@@ -361,6 +361,12 @@ class Sonar6(Sonar):
         failures = int(self._metric(product, 'test_failures', branch))
         errors = int(self._metric(product, 'test_errors', branch))
         return failures + errors if failures >= 0 and errors >= 0 else -1
+
+    @extract_branch_decorator
+    def test_duration(self, product: str, branch: str) -> TimeDelta:
+        """ Return the duration of the test execution in seconds. """
+        duration = float(self.__metric(product, 'test_execution_time', branch))
+        return datetime.timedelta.max if duration == -1 else datetime.timedelta(seconds=duration / 1000)
 
     @extract_branch_decorator
     def methods(self, product: str, branch: str) -> int:
