@@ -16,13 +16,14 @@ limitations under the License.
 
 
 import datetime
+import functools
 import logging
 import xml.etree.cElementTree
 from xml.etree.ElementTree import Element
 
 from ..abstract import test_report
 from ..url_opener import UrlOpener
-from ...typing import DateTime
+from ...typing import DateTime, TimeDelta
 
 
 class UFTTestReport(test_report.TestReport):
@@ -85,6 +86,33 @@ class UFTTestReport(test_report.TestReport):
         day, month, year = date_string.split('-')
         hour, minute, second = time_string.split(':')
         return datetime.datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
+
+    @functools.lru_cache(maxsize=1024)
+    def duration(self, *report_urls: str) -> TimeDelta:
+        """ Return the duration of the test report. """
+        timestamps = []
+        for report_url in report_urls:
+            try:
+                summary = self.__summary(report_url)
+            except UrlOpener.url_open_exceptions:
+                return datetime.timedelta.max
+            except xml.etree.cElementTree.ParseError:
+                return datetime.timedelta.max
+            for attribute in ('sTime', 'eTime'):
+                try:
+                    date_string, time_string = summary.get(attribute).split(' - ')
+                except AttributeError as reason:
+                    logging.error("UFT report summary at %s has no %s attribute: %s", report_url, attribute, reason)
+                    return datetime.timedelta.max
+                day, month, year = date_string.split('-')
+                hour, minute, second = time_string.split(':')
+                timestamps.append(datetime.datetime(int(year), int(month), int(day),
+                                                    int(hour), int(minute), int(second)))
+        if timestamps:
+            return max(timestamps) - min(timestamps)
+        else:
+            logging.error("UFT report(s) at %s have no timestamps", report_urls)
+            return datetime.timedelta.max
 
     def __test_count(self, report_url: str, result_type: str) -> int:
         """ Return the number of tests with the specified result in the test report. """

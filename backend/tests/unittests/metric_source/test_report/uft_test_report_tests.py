@@ -131,3 +131,22 @@ class UFTTestReportTest(unittest.TestCase):
         # Points to the XML at the moment because the UFT HTML report isn't stored at a predictable location.
         self.assertEqual(['http://server/uft/uft.xml'],
                          self.__uft.metric_source_urls('http://server/uft/uft.xml'))
+
+    def test_duration(self):
+        """ Test that the duration of a test is returned. """
+        self.__opener.contents = '''<Report><Doc><Summary sTime="5-9-2017 - 13:18:23" eTime="5-9-2017 - 14:18:23"/>
+            </Doc></Report>'''
+        self.assertEqual(datetime.timedelta(hours=1), self.__uft.duration('url'))
+
+    def test_duration_without_urls(self):
+        """ Test that the duration of a test is the max timedelta when no urls are passed. """
+        self.assertEqual(datetime.timedelta.max, self.__uft.duration())
+
+    def test_duration_on_error(self):
+        """ Test that the duration of a test is the max timedelta when an exception occurs. """
+        self.assertEqual(datetime.timedelta.max, self.__uft.duration('raise'))
+
+    def test_duration_incomplete_xml(self):
+        """ Test that the duration of a test is the max timedelta when an exception occurs. """
+        self.__opener.contents = '<Report></Report>'
+        self.assertEqual(datetime.timedelta.max, self.__uft.duration('url'))
