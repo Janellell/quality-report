@@ -67,19 +67,19 @@ class BambooTestReport(test_report.TestReport):
             try:
                 root = self.__element_tree(report_url)
             except UrlOpener.url_open_exceptions + (xml.etree.cElementTree.ParseError,):
-                return datetime.timedelta(-1)
+                return datetime.timedelta.max
             try:
                 for attribute in ('buildStartedDate', 'buildCompletedDate'):
                     timestamps.append(dateutil.parser.parse(root.find(attribute).text))
             except (AttributeError, ValueError, TypeError) as reason:
                 logging.error("Couldn't parse date and time from %s at %s: %s", self.metric_source_name, report_url,
                               reason)
-                return datetime.timedelta(-1)
+                return datetime.timedelta.max
         if timestamps:
             return max(timestamps) - min(timestamps)
         else:
             logging.error("Couldn't find time stamps in %s at %s", self.metric_source_name, report_urls)
-            return datetime.timedelta(-1)
+            return datetime.timedelta.max
 
     def __test_count(self, report_url: str, result_type: str) -> int:
         """ Return the number of tests with the specified result in the test report. """

@@ -101,14 +101,14 @@ class JenkinsTestReport(test_report.TestReport):
     def duration(self, *report_urls: str):
         """ Return the duration of the test reports. """
         if not report_urls:
-            return datetime.timedelta(-1)
+            return datetime.timedelta.max
         duration = datetime.timedelta()
         for report_url in report_urls:
             json = self.__read_json(utils.url_join(self.url(), "job", report_url, 'lastCompletedBuild/api/python'))
             if json:
                 duration += datetime.timedelta(seconds=float(json["duration"]))
             else:
-                return datetime.timedelta(-1)
+                return datetime.timedelta.max
         return duration
 
     def __read_json(self, job_name: str, api_postfix: str) -> Optional[Dict[str, Union[int, str]]]:

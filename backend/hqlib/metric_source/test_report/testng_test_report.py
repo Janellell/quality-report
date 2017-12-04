@@ -60,7 +60,7 @@ class TestNGTestReport(test_report.TestReport):
             return max(date_times) - min(date_times)
         else:
             logging.error("Couldn't find timestamps in test suites in: %s", report_urls)
-            return datetime.timedelta(-1)
+            return datetime.timedelt.max
 
     def __time_stamps(self, *metric_source_ids) -> Sequence[DateTime]:
         """ Return the timestamps in the test suites. """

@@ -71,7 +71,7 @@ class JunitTestReport(test_report.TestReport):
             return max(timestamps) - min(timestamps)
         else:
             logging.error("Couldn't find test suites in: %s", report_urls)
-            return datetime.timedelta(-1)
+            return datetime.timedelta.max
 
     def __time_stamps(self, *metric_source_ids: str) -> Sequence[DateTime]:
         """ Return the time stamps in the suites. """

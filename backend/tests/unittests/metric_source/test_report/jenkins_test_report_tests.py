@@ -180,8 +180,8 @@ class JenkinsTestReportTest(unittest.TestCase):
 
     def test_duration_missing_urls(self):
         """ Test that the test duration is -1 when no jobs are provided. """
-        self.assertEqual(datetime.timedelta(-1), self.__jenkins.duration())
+        self.assertEqual(datetime.timedelta.max, self.__jenkins.duration())
 
     def test_duration_with_invalid_data(self):
         """ Test that the test duration is -1 when the data is invalid. """
-        self.assertEqual(datetime.timedelta(-1), self.__jenkins.duration('raise'))
+        self.assertEqual(datetime.timedelta.max, self.__jenkins.duration('raise'))
