@@ -24,7 +24,7 @@ import dateutil.parser
 
 from ..abstract import test_report
 from ..url_opener import UrlOpener
-from ...typing import DateTime
+from ...typing import DateTime, TimeDelta
 
 
 class BambooTestReport(test_report.TestReport):
@@ -59,6 +59,27 @@ class BambooTestReport(test_report.TestReport):
             logging.error("Couldn't parse date and time from %s at %s: %s", self.metric_source_name, metric_source_id,
                           reason)
             return datetime.datetime.min
+
+    def duration(self, *report_urls: str) -> TimeDelta:
+        """ Return the test duration. """
+        timestamps = []
+        for report_url in report_urls:
+            try:
+                root = self.__element_tree(report_url)
+            except UrlOpener.url_open_exceptions + (xml.etree.cElementTree.ParseError,):
+                return datetime.timedelta(-1)
+            try:
+                for attribute in ('buildStartedDate', 'buildCompletedDate'):
+                    timestamps.append(dateutil.parser.parse(root.find(attribute).text))
+            except (AttributeError, ValueError, TypeError) as reason:
+                logging.error("Couldn't parse date and time from %s at %s: %s", self.metric_source_name, report_url,
+                              reason)
+                return datetime.timedelta(-1)
+        if timestamps:
+            return max(timestamps) - min(timestamps)
+        else:
+            logging.error("Couldn't find time stamps in %s at %s", self.metric_source_name, report_urls)
+            return datetime.timedelta(-1)
 
     def __test_count(self, report_url: str, result_type: str) -> int:
         """ Return the number of tests with the specified result in the test report. """

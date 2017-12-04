@@ -105,3 +105,10 @@ class BambooTestReportTest(unittest.TestCase):
         # Points to the XML at the moment.
         self.assertEqual(['http://bamboo/rest/api/latest/result/PLAN/latest'],
                          self.__report.metric_source_urls('http://bamboo/rest/api/latest/result/PLAN/latest'))
+
+    def test_duration(self):
+        """ Test the duration of the test (build). """
+        self.__opener.contents = \
+            '<result><buildCompletedDate>2017-10-12T03:39:21.840+02:00</buildCompletedDate>' \
+            '        <buildStartedDate>2017-10-12T02:39:21.840+02:00</buildStartedDate></result>'
+        self.assertEqual(datetime.timedelta(hours=1), self.__report.duration('url'))
