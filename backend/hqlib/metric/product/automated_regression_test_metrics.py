@@ -73,3 +73,27 @@ class RegressionTestAge(MetricSourceAgeMetric):
     perfect_template = 'De regressietest van {name} is vandaag gedraaid.'
     template = 'De regressietest van {name} is {value} {unit} geleden gedraaid.'
     metric_source_class = metric_source.SystemTestReport
+
+
+class RegressionTestDuration(LowerIsBetterMetric):
+    """ Metric for measuring the duration of the regression tests. """
+
+    name = 'Uitvoeringstijd regressietesten'
+    unit = 'minuten'
+    norm_template = 'De uitvoeringstijd van de regressiettesten is minder dan {target} {unit}. ' \
+                    'Meer dan {low_target} {unit} is rood.'
+    template = 'De uitvoeringstijd van de regressietesten is {value} {unit}.'
+    target_value = 60
+    low_target_value = 10
+    metric_source_class = metric_source.SystemTestReport
+
+    def value(self):
+        return -1 if self._missing() else \
+            int(round(self._metric_source.duration(*self._get_metric_source_ids()).total_seconds() / 60.))
+
+    def _missing(self) -> bool:
+        if not self._metric_source:
+            return True
+        urls = self._get_metric_source_ids()
+        duration = self._metric_source.duration(*urls)
+        return duration is None or duration == -1

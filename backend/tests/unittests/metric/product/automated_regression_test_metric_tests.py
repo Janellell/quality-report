@@ -43,6 +43,7 @@ class FakeJenkinsTestReport(domain.MetricSource):
         self.passed = 14
         self.skipped = 0
         self._datetime = datetime.datetime.now() - datetime.timedelta(hours=36)
+        self._duration = datetime.timedelta(seconds=120)
         super().__init__()
 
     # pylint: disable=unused-argument
@@ -63,6 +64,10 @@ class FakeJenkinsTestReport(domain.MetricSource):
     def datetime(self, *args):
         """ Return a fake date. """
         return self._datetime
+
+    def duration(self, *args):
+        """ Return a fake test duration. """
+        return self._duration
 
 
 class FailingRegressionTestsTest(unittest.TestCase):
