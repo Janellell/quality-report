@@ -107,5 +107,4 @@ class UnittestDurationTest(unittest.TestCase):
         report = metric_source.UnitTestReport()
         report.duration = unittest.mock.MagicMock(return_value=datetime.timedelta(seconds=42))
         project = domain.Project(metric_sources={metric_source.UnitTestReport: report})
-        self.assertEqual(datetime.timedelta(seconds=42),
-                         metric.UnittestDuration(subject=FakeSubject(), project=project).value())
+        self.assertEqual(42, metric.UnittestDuration(subject=FakeSubject(), project=project).value())

@@ -83,7 +83,8 @@ class UnittestDuration(LowerIsBetterMetric):
     metric_source_class = metric_source.UnitTestReport
 
     def value(self):
-        value = self._metric_source.duration(self.__metric_source_id()) if self._metric_source else None
+        value = int(round(self._metric_source.duration(self.__metric_source_id()).total_seconds())) \
+            if self._metric_source else None
         return -1 if value is None else value
 
     def __metric_source_id(self) -> str:
