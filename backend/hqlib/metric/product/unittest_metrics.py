@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import datetime
+
 from hqlib.domain import LowerIsBetterMetric
 from hqlib.typing import MetricParameters
 from hqlib import metric_source
@@ -83,11 +85,7 @@ class UnittestDuration(LowerIsBetterMetric):
     metric_source_class = metric_source.UnitTestReport
 
     def value(self):
-        value = int(round(self._metric_source.duration(self.__metric_source_id()).total_seconds())) \
-            if self._metric_source else None
-        return -1 if value is None else value
-
-    def __metric_source_id(self) -> str:
-        """ Return the id of the subject in the metric source. """
-        return self._subject.metric_source_id(self._metric_source) or '' \
-            if (self._subject and self._metric_source) else ''
+        if not self._metric_source:
+            return -1
+        duration = self._metric_source.duration(*self._get_metric_source_ids())
+        return -1 if duration == datetime.timedelta.max else int(round(duration.total_seconds()))

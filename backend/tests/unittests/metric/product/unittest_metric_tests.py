@@ -108,3 +108,10 @@ class UnittestDurationTest(unittest.TestCase):
         report.duration = unittest.mock.MagicMock(return_value=datetime.timedelta(seconds=42))
         project = domain.Project(metric_sources={metric_source.UnitTestReport: report})
         self.assertEqual(42, metric.UnittestDuration(subject=FakeSubject(), project=project).value())
+
+    def test_value_on_error(self):
+        """ Test that the value is -1 when the metric source is not available. """
+        report = metric_source.UnitTestReport()
+        report.duration = unittest.mock.MagicMock(return_value=datetime.timedelta.max)
+        project = domain.Project(metric_sources={metric_source.UnitTestReport: report})
+        self.assertEqual(-1, metric.UnittestDuration(subject=FakeSubject(), project=project).value())
