@@ -52,7 +52,7 @@ class TrustedProductMaintainability(Requirement):
 class UnitTests(Requirement):
     """ Require the product to have unit tests. """
     _name = 'Unit tests'
-    _metric_classes = (metric.FailingUnittests, metric.UnittestReportAge)
+    _metric_classes = (metric.FailingUnittests, metric.UnittestReportAge, metric.UnittestDuration)
 
 
 class UnitTestCoverage(Requirement):
@@ -64,7 +64,7 @@ class UnitTestCoverage(Requirement):
 class ART(Requirement):
     """ Require the product to have an automated regression test suite. """
     _name = 'Automated regression tests'
-    _metric_classes = (metric.FailingRegressionTests, metric.RegressionTestAge)
+    _metric_classes = (metric.FailingRegressionTests, metric.RegressionTestAge, metric.RegressionTestDuration)
 
 
 class ARTCoverage(Requirement):
