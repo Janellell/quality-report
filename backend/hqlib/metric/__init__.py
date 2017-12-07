@@ -38,7 +38,7 @@ from .product.performance_metrics import PerformanceLoadTestWarnings, Performanc
     PerformanceScalabilityTestDuration
 from .product.size_metrics import ProductLOC, TotalLOC
 from .product.source_code_metrics import CommentedLOC, CyclomaticComplexity, LongMethods, ManyParameters
-from .product.unittest_metrics import FailingUnittests
+from .product.unittest_metrics import FailingUnittests, UnittestDuration
 from .product.unittest_coverage_metrics import UnittestLineCoverage, UnittestBranchCoverage
 from .product.user_story_metrics import (
     UserStoriesNotReviewed, UserStoriesNotApproved, UserStoriesWithTooFewLogicalTestCases)

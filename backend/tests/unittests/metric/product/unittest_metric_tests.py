@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import datetime
 import unittest
+import unittest.mock
 
 from hqlib import metric, domain, metric_source
 
@@ -96,3 +98,14 @@ class FailingUnittestsTest(unittest.TestCase):
         project = domain.Project(metric_sources={metric_source.UnitTestReport: report})
         failing_unittests = metric.FailingUnittests(subject=FakeSubject(), project=project)
         self.assertEqual('Er zijn geen unittesten.', failing_unittests.report())
+
+
+class UnittestDurationTest(unittest.TestCase):
+    """ Unit test for the unit test duration metric. """
+    def test_value(self):
+        """ Test that the value is correct. """
+        report = metric_source.UnitTestReport()
+        report.duration = unittest.mock.MagicMock(return_value=datetime.timedelta(seconds=42))
+        project = domain.Project(metric_sources={metric_source.UnitTestReport: report})
+        self.assertEqual(datetime.timedelta(seconds=42),
+                         metric.UnittestDuration(subject=FakeSubject(), project=project).value())

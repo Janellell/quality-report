@@ -68,3 +68,25 @@ class FailingUnittests(LowerIsBetterMetric):
         parameters['skipped'] = str(self._metric_source.skipped_tests(self.__metric_source_id())) \
             if self._metric_source else '?'
         return parameters
+
+
+class UnittestDuration(LowerIsBetterMetric):
+    """ Metric for measuring the duration of the unit tests. """
+
+    name = 'Uitvoeringstijd unittesten'
+    unit = 'seconden'
+    norm_template = 'De uitvoeringstijd van de unitttesten is minder dan {target} {unit}. ' \
+                    'Meer dan {low_target} {unit} is rood.'
+    template = 'De uitvoeringstijd van de unittesten is {value} {unit}.'
+    target_value = 600
+    low_target_value = 60
+    metric_source_class = metric_source.UnitTestReport
+
+    def value(self):
+        value = self._metric_source.duration(self.__metric_source_id()) if self._metric_source else None
+        return -1 if value is None else value
+
+    def __metric_source_id(self) -> str:
+        """ Return the id of the subject in the metric source. """
+        return self._subject.metric_source_id(self._metric_source) or '' \
+            if (self._subject and self._metric_source) else ''
