@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import datetime
 
 from hqlib.typing import MetricParameters
 from ... import metric_source
@@ -88,12 +89,7 @@ class RegressionTestDuration(LowerIsBetterMetric):
     metric_source_class = metric_source.SystemTestReport
 
     def value(self):
-        return -1 if self._missing() else \
-            int(round(self._metric_source.duration(*self._get_metric_source_ids()).total_seconds() / 60.))
-
-    def _missing(self) -> bool:
         if not self._metric_source:
-            return True
-        urls = self._get_metric_source_ids()
-        duration = self._metric_source.duration(*urls)
-        return duration is None or duration == -1
+            return -1
+        duration = self._metric_source.duration(*self._get_metric_source_ids())
+        return -1 if duration == datetime.timedelta.max else int(round(duration.total_seconds() / 60.))
