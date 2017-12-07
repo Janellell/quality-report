@@ -78,8 +78,8 @@ class UnittestDuration(LowerIsBetterMetric):
     norm_template = 'De uitvoeringstijd van de unitttesten is minder dan {target} {unit}. ' \
                     'Meer dan {low_target} {unit} is rood.'
     template = 'De uitvoeringstijd van de unittesten is {value} {unit}.'
-    target_value = 600
-    low_target_value = 60
+    target_value = 60
+    low_target_value = 600
     metric_source_class = metric_source.UnitTestReport
 
     def value(self):

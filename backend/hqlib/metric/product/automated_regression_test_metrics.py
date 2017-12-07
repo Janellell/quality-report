@@ -83,8 +83,8 @@ class RegressionTestDuration(LowerIsBetterMetric):
     norm_template = 'De uitvoeringstijd van de regressiettesten is minder dan {target} {unit}. ' \
                     'Meer dan {low_target} {unit} is rood.'
     template = 'De uitvoeringstijd van de regressietesten is {value} {unit}.'
-    target_value = 60
-    low_target_value = 10
+    target_value = 10
+    low_target_value = 60
     metric_source_class = metric_source.SystemTestReport
 
     def value(self):
