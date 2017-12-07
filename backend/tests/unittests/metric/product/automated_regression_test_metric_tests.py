@@ -143,3 +143,31 @@ class RegressionTestAgeTest(unittest.TestCase):
         days = (datetime.datetime.now() - self.__jenkins.datetime()).days
         self.assertEqual('De regressietest van FakeSubject is {0} dagen geleden gedraaid.'.format(days),
                          self.__metric.report())
+
+    def test_url(self):
+        """ Test that the url points to the Jenkins job. """
+        self.assertEqual({'Jenkins testreport': 'jenkins_job'}, self.__metric.url())
+
+    def test_url_multiple_jobs(self):
+        """ Test that the url points to the Jenkins jobs. """
+        subject = FakeSubject(metric_source_ids={self.__jenkins: ['a', 'b']})
+        failing_tests = metric.RegressionTestAge(subject=subject, project=self.__project)
+        self.assertEqual({'Jenkins testreport (1/2)': 'a', 'Jenkins testreport (2/2)': 'b'}, failing_tests.url())
+
+
+class RegressionTestDuration(unittest.TestCase):
+    """ Unit tests for the regression test duration metric. """
+    def setUp(self):
+        self.__jenkins = FakeJenkinsTestReport()
+        self.__subject = FakeSubject(metric_source_ids={self.__jenkins: 'jenkins_job'})
+        self.__project = domain.Project(metric_sources={metric_source.SystemTestReport: self.__jenkins})
+        self.__metric = metric.RegressionTestDuration(subject=self.__subject, project=self.__project)
+
+    def test_value(self):
+        """ Test that the value is in minutes. """
+        self.assertEqual(2, self.__metric.value())
+
+    def test_report(self):
+        """ Test the metric report. """
+        self.assertEqual("De uitvoeringstijd van de regressietest van FakeSubject is 2 minuten.",
+                         self.__metric.report())

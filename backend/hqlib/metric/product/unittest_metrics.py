@@ -73,7 +73,7 @@ class FailingUnittests(LowerIsBetterMetric):
 class UnittestDuration(LowerIsBetterMetric):
     """ Metric for measuring the duration of the unit tests. """
 
-    name = 'Uitvoeringstijd unittesten'
+    name = 'Unittestduur'
     unit = 'seconden'
     norm_template = 'De uitvoeringstijd van de unitttesten is minder dan {target} {unit}. ' \
                     'Meer dan {low_target} {unit} is rood.'

@@ -78,11 +78,11 @@ class RegressionTestAge(MetricSourceAgeMetric):
 class RegressionTestDuration(LowerIsBetterMetric):
     """ Metric for measuring the duration of the regression tests. """
 
-    name = 'Uitvoeringstijd regressietesten'
+    name = 'Regressietestduur'
     unit = 'minuten'
-    norm_template = 'De uitvoeringstijd van de regressiettesten is minder dan {target} {unit}. ' \
+    norm_template = 'De uitvoeringstijd van de regressiettest is minder dan {target} {unit}. ' \
                     'Meer dan {low_target} {unit} is rood.'
-    template = 'De uitvoeringstijd van de regressietesten is {value} {unit}.'
+    template = 'De uitvoeringstijd van de regressietest van {name} is {value} {unit}.'
     target_value = 10
     low_target_value = 60
     metric_source_class = metric_source.SystemTestReport
