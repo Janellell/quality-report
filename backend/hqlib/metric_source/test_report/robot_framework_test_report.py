@@ -26,7 +26,7 @@ import dateutil.parser
 
 from ..abstract import test_report
 from ..url_opener import UrlOpener
-from ...typing import DateTime
+from ...typing import DateTime, TimeDelta
 
 
 class RobotFrameworkTestReport(test_report.TestReport):
@@ -52,9 +52,32 @@ class RobotFrameworkTestReport(test_report.TestReport):
             return datetime.datetime.min
         try:
             return dateutil.parser.parse(root.get("generated"))
-        except TypeError as reason:
+        except (TypeError, ValueError) as reason:
             logging.warning("Couldn't parse report date and time from %s: %s", metric_source_id, reason)
             return datetime.datetime.min
+
+    def duration(self, *metric_source_ids: str) -> TimeDelta:
+        """ Return the duration of the test. """
+        timestamps = []
+        for report_url in metric_source_ids:
+            try:
+                root = self.__element_tree(report_url)
+            except UrlOpener.url_open_exceptions:
+                return datetime.timedelta.max
+            except xml.etree.cElementTree.ParseError:
+                return datetime.timedelta.max
+            for status in root.findall("./suite/status"):
+                for attribute in ("starttime", "endtime"):
+                    try:
+                        timestamps.append(dateutil.parser.parse(status.get(attribute)))
+                    except (TypeError, ValueError) as reason:
+                        logging.error("Couldn't parse %s from %s: %s", attribute, report_url, reason)
+                        return datetime.timedelta.max
+        if timestamps:
+            return max(timestamps) - min(timestamps)
+        else:
+            logging.error("Couldn't find any time stamps in %s", metric_source_ids)
+            return datetime.timedelta.max
 
     def metric_source_urls(self, *report_urls: str) -> List[str]:  # pylint: disable=no-self-use
         return [re.sub(r"output\.xml$", "report.html", report_url) for report_url in report_urls]

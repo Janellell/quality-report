@@ -106,3 +106,37 @@ class RobotFrameworkTestReportTest(unittest.TestCase):
         """ Test that the urls point to the HTML versions of the reports. """
         self.assertEqual(['http://server/robot/report.html'],
                          self.__robot.metric_source_urls('http://server/robot/output.xml'))
+
+    def test_duration(self):
+        """ Test the duration of the test. """
+        self.__opener.contents = """
+<robot>
+    <suite>
+        <status status="PASS" endtime="20171209 07:09:34.210" starttime="20171209 07:00:03.277"></status>
+    </suite>
+</robot>
+        """
+        self.assertEqual(datetime.timedelta(seconds=570, microseconds=933000), self.__robot.duration('url'))
+
+    def test_duration_without_suites(self):
+        """ Test the duration of the test. """
+        self.__opener.contents = "<robot></robot>"
+        self.assertEqual(datetime.timedelta.max, self.__robot.duration('url'))
+
+    def test_duration_without_url(self):
+        """ Test the duration of the test. """
+        self.assertEqual(datetime.timedelta.max, self.__robot.duration())
+
+    def test_duration_on_error(self):
+        """ Test the duration of the test. """
+        self.assertEqual(datetime.timedelta.max, self.__robot.duration('raise'))
+
+    def test_duration_on_parse_error(self):
+        """ Test the duration of the test. """
+        self.__opener.contents = '<robot><suite>'
+        self.assertEqual(datetime.timedelta.max, self.__robot.duration('url'))
+
+    def test_duration_when_attribute_is_missing(self):
+        """ Test the duration of the test. """
+        self.__opener.contents = '<robot><suite><status/></suite></robot>'
+        self.assertEqual(datetime.timedelta.max, self.__robot.duration('url'))
