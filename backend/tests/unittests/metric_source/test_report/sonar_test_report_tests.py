@@ -45,6 +45,22 @@ class SonarTestReportTest(unittest.TestCase):
         self.assertEqual(-1, self.__test_report.skipped_tests())
         self.assertEqual(datetime.datetime.min, self.__test_report.datetime())
 
+    def test_report_datetime(self):
+        """ Test that the date and time of the Sonar analysis is returned. """
+        self.assertEqual(datetime.datetime(2016, 7, 7, 12, 26, 44), self.__test_report.datetime('url'))
+
+    def test_duration(self):
+        """ Test that the duration of the test is returned. """
+        self.assertEqual(datetime.timedelta(seconds=123), self.__test_report.duration('url'))
+
+    def test_duration_multiple_ids(self):
+        """ Test that the duration of the test is returned. """
+        self.assertEqual(datetime.timedelta(seconds=2*123), self.__test_report.duration('url1', 'url2'))
+
+    def test_duration_on_error(self):
+        """ Test that the duration is the max duration of Sonar is unavailable. """
+        self.assertEqual(datetime.timedelta.max, self.__test_report.duration('url1', 'error'))
+
     def test_urls(self):
         """ Test that the urls point to the HTML versions of the reports. """
         self.__test_report.dashboard_url = unittest.mock.Mock(return_value='http://sonar/sonar_id')

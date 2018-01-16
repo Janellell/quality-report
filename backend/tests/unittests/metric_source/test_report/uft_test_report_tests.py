@@ -150,3 +150,8 @@ class UFTTestReportTest(unittest.TestCase):
         """ Test that the duration of a test is the max timedelta when an exception occurs. """
         self.__opener.contents = '<Report></Report>'
         self.assertEqual(datetime.timedelta.max, self.__uft.duration('url'))
+
+    def test_duration_on_parse_error(self):
+        """ Test that the duration of a test is the max timedelta when a parse error occurs. """
+        self.__opener.contents = '<Report></Error>'
+        self.assertEqual(datetime.timedelta.max, self.__uft.duration('url'))

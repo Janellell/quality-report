@@ -171,3 +171,7 @@ class RegressionTestDuration(unittest.TestCase):
         """ Test the metric report. """
         self.assertEqual("De uitvoeringstijd van de regressietest van FakeSubject is 2 minuten.",
                          self.__metric.report())
+
+    def test_value_without_metric_source(self):
+        """ Test that the value is -1 when no metric source has been configured. """
+        self.assertEqual(-1, metric.RegressionTestDuration(subject=self.__subject, project=domain.Project()).value())

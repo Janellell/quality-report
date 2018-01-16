@@ -136,3 +136,8 @@ class TestNGTestReportTest(unittest.TestCase):
         </suite>
         </testng-results>'''
         self.assertEqual(datetime.timedelta(seconds=6), self.__testng.duration('url'))
+
+    def test_duration_without_urls(self):
+        """ Test that the duration is the maximim duration when no urls are passed. """
+        self.assertEqual(datetime.timedelta.max, self.__testng.duration())
+

@@ -112,3 +112,16 @@ class BambooTestReportTest(unittest.TestCase):
             '<result><buildCompletedDate>2017-10-12T03:39:21.840+02:00</buildCompletedDate>' \
             '        <buildStartedDate>2017-10-12T02:39:21.840+02:00</buildStartedDate></result>'
         self.assertEqual(datetime.timedelta(hours=1), self.__report.duration('url'))
+
+    def test_duration_on_error(self):
+        """ Test the duration on error. """
+        self.assertEqual(datetime.timedelta.max, self.__report.duration("raise"))
+
+    def test_duration_xml_no_timestamp(self):
+        """ Test that the maximum duration is returned when the xml is incomplete. """
+        self.__opener.contents = '<result><buildCompletedDate></buildCompletedDate></result>'
+        self.assertEqual(datetime.timedelta.max, self.__report.duration("url"))
+
+    def test_duration_xml_no_url(self):
+        """ Test that the maximum duration is returned when no url is passed. """
+        self.assertEqual(datetime.timedelta.max, self.__report.duration())

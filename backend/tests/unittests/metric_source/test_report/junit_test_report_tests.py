@@ -148,3 +148,8 @@ class JunitTestReportTest(unittest.TestCase):
                                  '  </testsuite>' \
                                  '</testsuites>'
         self.assertEqual(datetime.timedelta(seconds=45.321), self.__junit.duration('url1', 'url2'))
+
+    def test_duration_without_urls(self):
+        """ Test that the duration is the maximum timedelta if not urls are passed. """
+        self.assertEqual(datetime.timedelta.max, self.__junit.duration())
+
