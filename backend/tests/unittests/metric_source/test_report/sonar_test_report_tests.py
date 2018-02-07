@@ -61,7 +61,7 @@ class SonarTestReportTest(unittest.TestCase):
     def test_duration_multiple_ids(self):
         """ Test that the duration of the test is returned. """
         self.__test_report.test_duration = unittest.mock.Mock(return_value=datetime.timedelta(seconds=123))
-        self.assertEqual(datetime.timedelta(seconds=2*123), self.__test_report.duration('url1', 'url2'))
+        self.assertEqual(datetime.timedelta(seconds=2 * 123), self.__test_report.duration('url1', 'url2'))
 
     def test_duration_on_error(self):
         """ Test that the duration is the max duration of Sonar is unavailable. """

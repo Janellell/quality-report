@@ -61,7 +61,7 @@ class JunitTestReport(test_report.TestReport):
         if timestamps:
             return min(timestamps)
         else:
-            logging.error("Couldn't find timestamps in test suites in: %s", report_url)
+            logging.error("Couldn't find timestamps in test suites in: %s", metric_source_id)
             return datetime.datetime.min
 
     def duration(self, *metric_source_ids: str) -> TimeDelta:
@@ -70,7 +70,7 @@ class JunitTestReport(test_report.TestReport):
         if timestamps:
             return max(timestamps) - min(timestamps)
         else:
-            logging.error("Couldn't find test suites in: %s", report_urls)
+            logging.error("Couldn't find test suites in: %s", metric_source_ids)
             return datetime.timedelta.max
 
     def __time_stamps(self, *metric_source_ids: str) -> Sequence[DateTime]:

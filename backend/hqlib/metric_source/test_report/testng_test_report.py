@@ -50,7 +50,7 @@ class TestNGTestReport(test_report.TestReport):
         if date_times:
             return min(date_times)
         else:
-            logging.error("Couldn't find timestamps in test suites in: %s", report_url)
+            logging.error("Couldn't find timestamps in test suites in: %s", metric_source_id)
             return datetime.datetime.min
 
     def duration(self, *metric_source_ids: str) -> TimeDelta:
@@ -59,7 +59,7 @@ class TestNGTestReport(test_report.TestReport):
         if date_times:
             return max(date_times) - min(date_times)
         else:
-            logging.error("Couldn't find timestamps in test suites in: %s", report_urls)
+            logging.error("Couldn't find timestamps in test suites in: %s", metric_source_ids)
             return datetime.timedelta.max
 
     def __time_stamps(self, *metric_source_ids) -> Sequence[DateTime]:
@@ -78,7 +78,6 @@ class TestNGTestReport(test_report.TestReport):
             else:
                 return []
         return [utils.parse_iso_datetime(timestamp) for timestamp in timestamps if timestamp]
-                logging.warning("Couldn't find test suites in: %s", report_url)
 
     def __test_count(self, report_url: str, result_type: str) -> int:
         """ Return the number of tests with the specified result in the test report. """

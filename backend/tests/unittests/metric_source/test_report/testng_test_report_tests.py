@@ -140,4 +140,3 @@ class TestNGTestReportTest(unittest.TestCase):
     def test_duration_without_urls(self):
         """ Test that the duration is the maximim duration when no urls are passed. """
         self.assertEqual(datetime.timedelta.max, self.__testng.duration())
-
