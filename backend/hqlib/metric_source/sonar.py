@@ -161,6 +161,16 @@ class Sonar6(Sonar):
         """ Return the number of failed tests as reported by the test report. """
         return self.failing_unittests(metric_source_id)
 
+    def duration(self, *sonar_ids: str) -> TimeDelta:
+        """ Return the duration of the reports. """
+        durations = datetime.timedelta()
+        for sonar_id in sonar_ids:
+            duration = self.test_duration(sonar_id)
+            if duration == datetime.timedelta.max:
+                return duration
+            durations += duration
+        return durations
+
     # Coverage report and test report API
 
     def metric_source_urls(self, *metric_source_ids: str) -> Sequence[str]:

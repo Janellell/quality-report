@@ -47,14 +47,20 @@ class SonarTestReportTest(unittest.TestCase):
 
     def test_report_datetime(self):
         """ Test that the date and time of the Sonar analysis is returned. """
+        self.__test_report.version_number = unittest.mock.Mock(return_value="6.7")
+        self.__test_report.is_branch_plugin_installed = unittest.mock.Mock(return_value=False)
+        self.__test_report.url_read = unittest.mock.Mock(
+            return_value='{"component": {"analysisDate": "2016-07-07T12:26:44+"}}')
         self.assertEqual(datetime.datetime(2016, 7, 7, 12, 26, 44), self.__test_report.datetime('url'))
 
     def test_duration(self):
         """ Test that the duration of the test is returned. """
+        self.__test_report.test_duration = unittest.mock.Mock(return_value=datetime.timedelta(seconds=123))
         self.assertEqual(datetime.timedelta(seconds=123), self.__test_report.duration('url'))
 
     def test_duration_multiple_ids(self):
         """ Test that the duration of the test is returned. """
+        self.__test_report.test_duration = unittest.mock.Mock(return_value=datetime.timedelta(seconds=123))
         self.assertEqual(datetime.timedelta(seconds=2*123), self.__test_report.duration('url1', 'url2'))
 
     def test_duration_on_error(self):
