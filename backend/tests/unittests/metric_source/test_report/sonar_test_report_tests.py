@@ -18,7 +18,7 @@ import datetime
 import unittest
 from unittest.mock import patch
 
-from hqlib.metric_source import Sonar
+from hqlib.metric_source import Sonar, url_opener
 
 
 class SonarTestReportTest(unittest.TestCase):
@@ -45,12 +45,12 @@ class SonarTestReportTest(unittest.TestCase):
         self.assertEqual(-1, self.__test_report.skipped_tests())
         self.assertEqual(datetime.datetime.min, self.__test_report.datetime())
 
-    def test_report_datetime(self):
+    @unittest.mock.patch.object(url_opener.UrlOpener, "url_read")
+    def test_report_datetime(self, mock_url_read):
         """ Test that the date and time of the Sonar analysis is returned. """
         self.__test_report.version_number = unittest.mock.Mock(return_value="6.7")
         self.__test_report.is_branch_plugin_installed = unittest.mock.Mock(return_value=False)
-        self.__test_report.url_read = unittest.mock.Mock(
-            return_value='{"component": {"analysisDate": "2016-07-07T12:26:44+"}}')
+        mock_url_read.return_value='{"component": {"analysisDate": "2016-07-07T12:26:44+"}}'
         self.assertEqual(datetime.datetime(2016, 7, 7, 12, 26, 44), self.__test_report.datetime('url'))
 
     def test_duration(self):

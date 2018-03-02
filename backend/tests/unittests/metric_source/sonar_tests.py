@@ -415,8 +415,11 @@ class Sonar6Coverage(Sonar6TestCase):
                                      '{"component": {"measures": [{"metric": "test_errors", "value": "50"}]}}']
         self.assertEqual(150, self._sonar.failing_unittests('product'))
 
-    def test_test_duration(self):
+    def test_test_duration(self, mock_url_read):
         """ Test that the test duration can be retrieved. """
+        mock_url_read.side_effect = [
+            "5.6", '[{"k": "product"}]',
+            '{"component": {"measures": [{"metric": "test_execution_time", "value": "1000"}]}}']
         self.assertEqual(datetime.timedelta(seconds=1), self._sonar.test_duration('product'))
 
 
