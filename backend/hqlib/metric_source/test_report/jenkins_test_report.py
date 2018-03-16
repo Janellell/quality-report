@@ -104,7 +104,11 @@ class JenkinsTestReport(test_report.TestReport):
             return datetime.timedelta.max
         duration = datetime.timedelta()
         for report_url in report_urls:
-            json = self.__read_json(utils.url_join(self.url(), "job", report_url, 'lastCompletedBuild/api/python'))
+            json = self.__read_json(utild.url_join(self.url(), "job", report_url, 'lastCompletedBuild/api/python'))
+            if not json:
+                # Last completed build doesn't have the requested information, e.g. because it's aborted.
+                # Fall back to last successful build.
+                json = self.__read_json(self.__join_url(report_url, 'lastSuccessfulBuild/api/python'))
             if json:
                 duration += datetime.timedelta(seconds=float(json["duration"]))
             else:
@@ -133,5 +137,6 @@ class JenkinsTestReport(test_report.TestReport):
             if "totalCount" in action and "failCount" in action:
                 # Assume this is the test action dictionary. Include the timestamp of the build in the dictionary.
                 action["timestamp"] = build["timestamp"]
+                action["duration"] = build["duration"]
                 return action
         return None
