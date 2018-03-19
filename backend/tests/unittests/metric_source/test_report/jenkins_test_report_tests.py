@@ -175,7 +175,8 @@ class JenkinsTestReportTest(unittest.TestCase):
 
    def test_duration(self):
         """ Test that the test duration is returned. """
-        self.__opener.contents = '{"timestamp": "", "duration":1.5120007, "actions": [{"urlName":"testReport"}]}'
+        self.__opener.contents = '{"timestamp": "", "duration":1.5120007, ' \
+                                 '"actions": [{"totalCount":10, "failCount":0}]}'
         self.assertEqual(datetime.timedelta(seconds=1.5120007), self.__jenkins.duration('job/'))
 
     def test_duration_missing_urls(self):
