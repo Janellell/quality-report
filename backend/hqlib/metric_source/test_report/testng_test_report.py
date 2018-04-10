@@ -73,8 +73,8 @@ class TestNGTestReport(test_report.TestReport):
             except xml.etree.cElementTree.ParseError:
                 return []
             if test_suites:
-                timestamps.extend([test_suite.get('started-at') for test_suite in test_suites] +
-                                  [test_suite.get('finished-at') for test_suite in test_suites])
+                for timestamp in ("started-at", "finished-at"):
+                    timestamps.extend([test_suite.get(timestamp) for test_suite in test_suites])
             else:
                 return []
         return [utils.parse_iso_datetime(timestamp) for timestamp in timestamps if timestamp]
