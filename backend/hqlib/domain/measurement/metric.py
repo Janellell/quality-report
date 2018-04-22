@@ -82,7 +82,7 @@ class Metric(object):
     def __init__(self, subject=None, project: 'Project' = None) -> None:
         self._subject = subject
         self._project = project
-        for source in self._project.metric_sources(self.metric_source_class):
+        for source in self.__metric_sources():
             try:
                 source_id = self._subject.metric_source_id(source)
             except AttributeError:
@@ -215,7 +215,19 @@ class Metric(object):
     def __missing_source_class(self) -> bool:
         """ Return whether a metric source class that needs to be configured for the metric to be measurable is
             available from the project. """
-        return not self._project.metric_sources(self.metric_source_class) if self.metric_source_class else False
+        if self.metric_source_class:
+            return not bool(self.__metric_sources())
+        return False
+
+    def __metric_sources(self) -> List[MetricSource]:
+        """ Return the potential metric sources for this metric. """
+        metric_sources = []
+        for metric_source_source in self._subject, self._project:
+            try:
+                metric_sources.extend(metric_source_source.metric_sources(self.metric_source_class))
+            except AttributeError:
+                pass
+        return metric_sources
 
     def __missing_source_ids(self) -> bool:
         """ Return whether the metric source ids have been configured for the metric source class. """

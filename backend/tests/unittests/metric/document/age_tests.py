@@ -40,10 +40,10 @@ class DocumentAgeTest(unittest.TestCase):
 
     def setUp(self):
         self.__subversion = FakeSubversion()
-        self.__project = domain.Project(metric_sources={metric_source.VersionControlSystem: self.__subversion})
         self.__document = domain.Document(name='Title', url='http://doc',
+                                          metric_sources={metric_source.VersionControlSystem: self.__subversion},
                                           metric_source_ids={self.__subversion: 'http://doc/'})
-        self.__metric = metric.DocumentAge(subject=self.__document, project=self.__project)
+        self.__metric = metric.DocumentAge(subject=self.__document)
 
     def test_value(self):
         """ Test that the value of the metric equals the document age in days. """
@@ -59,8 +59,9 @@ class DocumentAgeTest(unittest.TestCase):
 
     def test_document_overrides_target(self):
         """ Test that the document can override the default target value. """
-        document = domain.Document(name='Title', metric_options={metric.DocumentAge: dict(target=20)})
-        age = metric.DocumentAge(subject=document, project=self.__project)
+        document = domain.Document(name='Title', metric_sources={metric_source.VersionControlSystem: self.__subversion},
+                                   metric_options={metric.DocumentAge: dict(target=20)})
+        age = metric.DocumentAge(subject=document)
         self.assertEqual(document.target(metric.DocumentAge), age.target())
 
 
@@ -70,9 +71,9 @@ class MissingDocumentAgeTest(unittest.TestCase):
     def setUp(self):
         self.__subversion = FakeSubversion()
         self.__document = domain.Document(name='Title', url='http://doc',
+                                          metric_sources={metric_source.VersionControlSystem: self.__subversion},
                                           metric_source_ids={self.__subversion: 'raise'})
-        self.__project = domain.Project(metric_sources={metric_source.VersionControlSystem: self.__subversion})
-        self.__metric = metric.DocumentAge(subject=self.__document, project=self.__project)
+        self.__metric = metric.DocumentAge(subject=self.__document)
 
     def test_value(self):
         """ Test that the value of the metric equals the document age in days. """
@@ -84,16 +85,16 @@ class MissingDocumentAgeTest(unittest.TestCase):
 
     def test_report_no_vcs(self):
         """ Test the report when there's no version control system. """
-        project = domain.Project()
         document = domain.Document(name='Title', url='http://doc', metric_source_ids={self.__subversion: 'path'})
-        age = metric.DocumentAge(subject=document, project=project)
+        age = metric.DocumentAge(subject=document)
         self.assertEqual('De document update leeftijd van Title kon niet gemeten worden omdat de bron '
                          'VersionControlSystem niet is geconfigureerd.', age.report())
 
     def test_report_no_vcs_path(self):
         """ Test the report when there's no version control system path. """
-        document = domain.Document(name='Title', url='http://doc')
-        age = metric.DocumentAge(subject=document, project=self.__project)
+        document = domain.Document(name='Title', metric_sources={metric_source.VersionControlSystem: self.__subversion},
+                                   url='http://doc')
+        age = metric.DocumentAge(subject=document)
         self.assertEqual('De document update leeftijd van Title kon niet gemeten worden omdat niet alle '
                          'benodigde bron-ids zijn geconfigureerd. Configureer ids voor de bron VersionControlSystem.',
                          age.report())
