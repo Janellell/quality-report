@@ -25,7 +25,7 @@ from hqlib import utils
 
 from ..abstract import test_report
 from ..url_opener import UrlOpener
-from ...typing import DateTime
+from ...typing import DateTime, TimeDelta
 from .. import Jenkins
 
 
@@ -98,17 +98,18 @@ class JenkinsTestReport(test_report.TestReport):
             json = self.__read_json(metric_source_id, "lastSuccessfulBuild/api/python")
         return datetime.datetime.fromtimestamp(float(json["timestamp"]) / 1000.) if json else datetime.datetime.min
 
-    def duration(self, *report_urls: str):
+    def duration(self, *metric_source_ids: str) -> TimeDelta:
         """ Return the duration of the test reports. """
-        if not report_urls:
+        metric_source_ids = self._expand_metric_source_id_reg_exps(*metric_source_ids)
+        if not metric_source_ids:
             return datetime.timedelta.max
         duration = datetime.timedelta()
-        for report_url in report_urls:
-            json = self.__read_json(utild.url_join(self.url(), "job", report_url, 'lastCompletedBuild/api/python'))
+        for metric_source_id in metric_source_ids:
+            json = self.__read_json(metric_source_id, 'lastCompletedBuild/api/python')
             if not json:
                 # Last completed build doesn't have the requested information, e.g. because it's aborted.
                 # Fall back to last successful build.
-                json = self.__read_json(self.__join_url(report_url, 'lastSuccessfulBuild/api/python'))
+                json = self.__read_json(metric_source_id, 'lastSuccessfulBuild/api/python')
             if json:
                 duration += datetime.timedelta(seconds=float(json["duration"]))
             else:

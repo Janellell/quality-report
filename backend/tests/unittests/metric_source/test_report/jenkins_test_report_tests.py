@@ -34,7 +34,8 @@ class JenkinsTestReportTest(unittest.TestCase):
     def test_testreport(self, mock_url_read, mock_jenkins_jobs):
         """ Test retrieving a Jenkins test report. """
         mock_jenkins_jobs.return_value = [{"name": "job"}]
-        mock_url_read.return_value = '{"timestamp":1467929105000, "actions":[{"urlName":"testReport", "failCount":2, ' \
+        mock_url_read.return_value = '{"timestamp":1467929105000, "duration": 10, ' \
+                                     '"actions":[{"urlName":"testReport", "failCount":2, ' \
                                      '"passCount":9, "skipCount":1, "totalCount":12}]}'
         jenkins = JenkinsTestReport(url="http://jenkins")
         self.assertEqual(2, jenkins.failed_tests('job'))
@@ -46,7 +47,8 @@ class JenkinsTestReportTest(unittest.TestCase):
     def test_testreport_with_re(self, mock_url_read, mock_jenkins_jobs):
         """ Test retrieving a Jenkins test report. """
         mock_jenkins_jobs.return_value = [{"name": "job1"}, {"name": "job2"}, {"name": "ignore"}]
-        mock_url_read.return_value = '{"timestamp":1467929105000, "duration": 10, "actions":[{"urlName":"testReport", "failCount":2, ' \
+        mock_url_read.return_value = '{"timestamp":1467929105000, "duration": 10, ' \
+                                     '"actions":[{"urlName":"testReport", "failCount":2, ' \
                                      '"passCount":9, "skipCount":1, "totalCount":12}]}'
         jenkins = JenkinsTestReport(url="http://jenkins")
         self.assertEqual(4, jenkins.failed_tests('job?'))
@@ -59,8 +61,9 @@ class JenkinsTestReportTest(unittest.TestCase):
         """ Test retrieving a Jenkins test report that has no pass count. Apparently that field is not present when
             there are no tests. """
         mock_jenkins_jobs.return_value = [{"name": "job"}]
-        mock_url_read.return_value = '{"timestamp":1467929105000, "duration": 10, "actions":[{"urlName":"testReport", ' \
-                                     '"failCount":0, "skipCount":0, "totalCount":8}]}'
+        mock_url_read.return_value = '{"timestamp":1467929105000, "duration": 10, ' \
+                                     '"actions":[{"urlName":"testReport", "failCount":0, "skipCount":0, ' \
+                                     '"totalCount":8}]}'
         jenkins = JenkinsTestReport(url="http://jenkins")
         self.assertEqual(0, jenkins.failed_tests('job'))
         self.assertEqual(8, jenkins.passed_tests('job'))
@@ -103,7 +106,8 @@ class JenkinsTestReportTest(unittest.TestCase):
     def test_report_datetime(self, mock_url_read, mock_jenkins_job):
         """ Test that the date and time of the test suite is returned. """
         mock_jenkins_job.return_value = [{"name": "job"}]
-        mock_url_read.return_value = '{"timestamp":1467929105000, "duration": 10, "actions":[{"totalCount":10,"failCount":0}]}'
+        mock_url_read.return_value = '{"timestamp":1467929105000, "duration": 10, ' \
+                                     '"actions":[{"totalCount":10,"failCount":0}]}'
         jenkins = JenkinsTestReport(url="http://jenkins")
         self.assertEqual(datetime.datetime.fromtimestamp(1467929105000 / 1000.), jenkins.datetime('job'))
 
@@ -114,7 +118,8 @@ class JenkinsTestReportTest(unittest.TestCase):
             test results. """
         mock_jenkins_jobs.return_value = [{"name": "job"}]
         mock_url_read.side_effect = ['{"timestamp":"this build should be ignored"}',
-                                     '{"actions":[{"totalCount":10,"failCount":0}], "timestamp":1467929105000, "duration": 10}']
+                                     '{"actions":[{"totalCount":10,"failCount":0}], '
+                                     '"timestamp":1467929105000, "duration": 10}']
         jenkins = JenkinsTestReport(url="http://jenkins")
         self.assertEqual(datetime.datetime.fromtimestamp(1467929105000 / 1000.), jenkins.datetime('job'))
 
@@ -173,16 +178,28 @@ class JenkinsTestReportTest(unittest.TestCase):
         jenkins = JenkinsTestReport(url="http://jenkins")
         self.assertEqual(["http://jenkins/job/notfound.*"], jenkins.metric_source_urls("notfound.*"))
 
-   def test_duration(self):
-        """ Test that the test duration is returned. """
-        self.__opener.contents = '{"timestamp": "", "duration":1.5120007, ' \
-                                 '"actions": [{"totalCount":10, "failCount":0}]}'
-        self.assertEqual(datetime.timedelta(seconds=1.5120007), self.__jenkins.duration('job/'))
+    @patch.object(Jenkins, "jobs")
+    @patch.object(UrlOpener, "url_read")
+    def test_duration(self, mock_url_read, mock_jenkins_jobs):
+    """ Test that the test duration is returned. """
+        mock_jenkins_jobs.return_value = [{"name": "job"}]
+        mock_url_read.return_value = '{"timestamp": "", "duration":1.5120007, ' \
+                                     '"actions": [{"totalCount":10, "failCount":0}]}'
+        jenkins = JenkinsTestReport(url="http://jenkins")
+        self.assertEqual(datetime.timedelta(seconds=1.5120007), jenkins.duration('job'))
 
-    def test_duration_missing_urls(self):
+    @patch.object(Jenkins, "jobs")
+    def test_duration_missing_urls(self, mock_jenkins_jobs):
         """ Test that the test duration is -1 when no jobs are provided. """
-        self.assertEqual(datetime.timedelta.max, self.__jenkins.duration())
+        mock_jenkins_jobs.return_value = [{"name": "job"}]
+        jenkins = JenkinsTestReport(url="http://jenkins")
+        self.assertEqual(datetime.timedelta.max, jenkins.duration())
 
-    def test_duration_with_invalid_data(self):
+    @patch.object(Jenkins, "jobs")
+    @patch.object(UrlOpener, "url_read")
+    def test_duration_with_invalid_data(self, mock_url_read, mock_jenkins_jobs):
         """ Test that the test duration is -1 when the data is invalid. """
-        self.assertEqual(datetime.timedelta.max, self.__jenkins.duration('raise'))
+        mock_jenkins_jobs.return_value = [{"name": "job"}]
+        mock_url_read.side_effect = urllib.error.HTTPError(None, None, None, None, None)
+        jenkins = JenkinsTestReport(url="http://jenkins")
+        self.assertEqual(datetime.timedelta.max, jenkins.duration('raise'))
