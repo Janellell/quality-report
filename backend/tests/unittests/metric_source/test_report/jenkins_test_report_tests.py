@@ -181,7 +181,7 @@ class JenkinsTestReportTest(unittest.TestCase):
     @patch.object(Jenkins, "jobs")
     @patch.object(UrlOpener, "url_read")
     def test_duration(self, mock_url_read, mock_jenkins_jobs):
-    """ Test that the test duration is returned. """
+        """ Test that the test duration is returned. """
         mock_jenkins_jobs.return_value = [{"name": "job"}]
         mock_url_read.return_value = '{"timestamp": "", "duration":1.5120007, ' \
                                      '"actions": [{"totalCount":10, "failCount":0}]}'
