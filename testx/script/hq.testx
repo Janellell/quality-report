@@ -1,0 +1,9 @@
+- go to:
+    url: /
+- wait to appear:
+    element1: navigationBar
+- check matches:
+    reportTitle: 'Kwaliteitsrapportage {{project}}'
+- check matches:
+    reportTitle:
+      href: '#'
