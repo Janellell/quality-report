@@ -165,7 +165,8 @@ class QualityReport(domain.DomainObject):
             system. """
         if not product:
             return None, ''
-        for vcs in self.__project.metric_sources(metric_source.VersionControlSystem):
+        vcs_class = metric_source.VersionControlSystem
+        for vcs in product.metric_sources(vcs_class) + self.__project.metric_sources(vcs_class):
             vcs_id = product.metric_source_id(vcs)
             if vcs_id:
                 return vcs, vcs_id
@@ -173,7 +174,7 @@ class QualityReport(domain.DomainObject):
 
     def sonar_id(self, product: domain.Product) -> Tuple[Optional[domain.MetricSource], str]:
         """ Return the Sonar id of the product. """
-        for sonar in self.__project.metric_sources(metric_source.Sonar):
+        for sonar in product.metric_sources(metric_source.Sonar) + self.__project.metric_sources(metric_source.Sonar):
             sonar_id = product.metric_source_id(sonar)
             if sonar_id:
                 return sonar, sonar_id

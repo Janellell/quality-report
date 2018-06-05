@@ -155,6 +155,10 @@ class Report(object):
 
                 return [FakeHistory()] if metric_source_class == metric_source.History else [FakeGit()]
 
+            @staticmethod
+            def domain_object_instances():
+                return []
+
         return FakeProject()
 
     def get_meta_section(self):

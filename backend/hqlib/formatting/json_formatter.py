@@ -286,6 +286,8 @@ class MetaDataJSONFormatter(object):
         included = 'true' if metric_source_class in report.included_metric_source_classes() else 'false'
         name = metric_source_class.metric_source_name
         id_ = metric_source_class.__name__
-        instances = report.project().metric_sources(metric_source_class)
+        instances = set(report.project().metric_sources(metric_source_class))
+        for domain_object in report.project().domain_object_instances():
+            instances.update(set(domain_object.metric_sources(metric_source_class)))
         urls = ', '.join(sorted(['"{0}"'.format(instance.url()) for instance in instances if instance.url()]))
         return '{{"included": {0}, "name": "{1}", "id": "{2}", "urls": [{3}]}}'.format(included, name, id_, urls)

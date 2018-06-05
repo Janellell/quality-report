@@ -60,8 +60,11 @@ class Project(RequirementSubject, measurable.MeasurableObject):
 
     def domain_object_classes(self) -> Set[Type[DomainObject]]:
         """ Return a set of all the domain object classes used. """
-        domain_objects = self.processes() + self.products() + self.teams() + self.documents() + self.environments()
-        return {cast(Type[DomainObject], domain_object.__class__) for domain_object in domain_objects}
+        return {cast(Type[DomainObject], domain_object.__class__) for domain_object in self.domain_object_instances()}
+
+    def domain_object_instances(self) -> List[measurable.MeasurableObject]:
+        """ Return a list of all the domain object instances added to the project. """
+        return self.processes() + self.products() + self.teams() + self.documents() + self.environments()
 
     def add_process(self, process: Process) -> None:
         """ Add a process to the project. """

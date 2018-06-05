@@ -15,9 +15,10 @@ limitations under the License.
 """
 
 import unittest
+from unittest.mock import Mock
 
 from hqlib.formatting import JSONFormatter, MetricsFormatter, MetaMetricsHistoryFormatter, MetaDataJSONFormatter
-from hqlib import domain, VERSION
+from hqlib import domain, metric_source, VERSION
 from . import fake_report
 
 
@@ -95,44 +96,31 @@ class MetricsFormatterTest(unittest.TestCase):
 
 class MetaDataFormatterTest(unittest.TestCase):
     """ Unit tests for the meta data JSON formatter. """
-    def setUp(self):
-        self.__formatter = MetaDataJSONFormatter()
 
     def test_process(self):
         """ Test that the report is processed correctly. """
         self.maxDiff = None
-        self.assertEqual('{"domain_objects": [{"included": true, "name": "Document", "id": "Document", '
-                         '"default_requirements": ["Track document age"], "optional_requirements": '
-                         '["Track the last security test date"]}, {"included": true, "name": "Product", "id": '
-                         '"Product", "default_requirements": [], "optional_requirements": '
-                         '["Aggregated test coverage", "Automated regression test coverage", '
-                         '"Automated regression tests", "Checkmarx SCA", "Code quality", '
-                         '"OWASP Top 10 2013 Dependencies", "OWASP Top 10 2013 ZAP", "Performance endurance", '
-                         '"Performance load", "Performance scalability", "Track branches", "Track open bug reports", '
-                         '"Track open findings", "Track open security bug reports", "Track open static security '
-                         'analysis bug reports", "Track quality gate", "Track ready user stories", '
-                         '"Track technical debt", "Track the duration of user stories", '
-                         '"Track the last security test date", "Track user stories in progress", '
-                         '"Track whether user stories have security and performance risks", '
-                         '"Unit test coverage", "Unit tests", "User stories and logical test cases"]}, '
-                         '{"included": true, "name": "Project", "id": "Project", "default_requirements": [], '
-                         '"optional_requirements": ["Track actions", '
-                         '"Track manual logical test cases", "Track open bug reports", "Track open findings", '
-                         '"Track open security bug reports", "Track open static security analysis bug reports", '
-                         '"Track quality gate", "Track ready user stories", "Track risks", "Track technical debt", '
-                         '"Track the duration of user stories", "Track the last security test date", '
-                         '"Track user stories in progress", '
-                         '"Track whether user stories have security and performance risks", '
-                         '"Trusted Product Maintainability, version 6.1"]}, {"included": true, "name": "Team", "id": '
-                         '"Team", "default_requirements": ["Track spirit"], "optional_requirements": ['
-                         '"Track the duration of user stories", "Track user stories in progress"]}], '
-                         '"requirements": [{"included": true, "name": "Automated regression test coverage", '
-                         '"id": "ARTCoverage", "metrics": ["Automatic regression test branch coverage", '
-                         '"Automatic regression test statement coverage", "Coveragerapportageleeftijd"]}, '
-                         '{"included": false, "name": "Automated regression tests", "id": "ART", '
-                         '"metrics": ["Hoeveelheid falende regressietesten", "Regressietestleeftijd"]}], '
-                         '"metrics": [{"included": false, "name": "Automatic regression test statement coverage", '
-                         '"id": "ARTStatementCoverage", "norm": "Minimaal 80% van de statements wordt gedekt door '
-                         'geautomatiseerde functionele tests. Minder dan 70% is rood."}], "metric_sources": '
-                         '[{"included": true, "name": "Git", "id": "Git", "urls": ["http://git/"]}]}\n',
-                         self.__formatter.process(fake_report.Report()))
+        domain_object_instance = Mock()
+        domain_object_instance.metric_sources.return_value = [metric_source.Git(url="domain_object_git")]
+        project = Mock()
+        project.domain_object_instances.return_value = [domain_object_instance]
+        project.metric_sources.return_value = [metric_source.Git(url="project_git")]
+        report = Mock()
+        report.included_domain_object_classes.return_value = []
+        report.included_metric_source_classes.return_value = []
+        report.included_metric_classes.return_value = []
+        report.domain_object_classes.return_value = [domain.Document]
+        report.requirement_classes.return_value = []
+        report.metric_classes.return_value = []
+        report.metric_source_classes.return_value = [metric_source.Git]
+        report.project.return_value = project
+        self.assertEqual(
+            '{"domain_objects": [{"included": false, "name": "Document", "id": "Document", "default_requirements": '
+            '["Track document age"], '
+            '"optional_requirements": ["Track the last security test date"]}], '
+            '"requirements": [], '
+            '"metrics": [], '
+            '"metric_sources": [{"included": false, "name": "Git", "id": "Git", "urls": ["domain_object_git/", '
+            '"project_git/"]}]}\n',
+            MetaDataJSONFormatter().process(report))
+
