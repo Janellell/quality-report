@@ -99,7 +99,6 @@ class MetaDataFormatterTest(unittest.TestCase):
 
     def test_process(self):
         """ Test that the report is processed correctly. """
-        self.maxDiff = None
         domain_object_instance = Mock()
         domain_object_instance.metric_sources.return_value = [metric_source.Git(url="domain_object_git")]
         project = Mock()
@@ -107,7 +106,7 @@ class MetaDataFormatterTest(unittest.TestCase):
         project.metric_sources.return_value = [metric_source.Git(url="project_git")]
         report = Mock()
         report.included_domain_object_classes.return_value = []
-        report.included_metric_source_classes.return_value = []
+        report.included_metric_source_classes.return_value = [metric_source.Git]
         report.included_metric_classes.return_value = []
         report.domain_object_classes.return_value = [domain.Document]
         report.requirement_classes.return_value = []
@@ -120,7 +119,7 @@ class MetaDataFormatterTest(unittest.TestCase):
             '"optional_requirements": ["Track the last security test date"]}], '
             '"requirements": [], '
             '"metrics": [], '
-            '"metric_sources": [{"included": false, "name": "Git", "id": "Git", "urls": ["domain_object_git/", '
+            '"metric_sources": [{"included": true, "name": "Git", "id": "Git", "urls": ["domain_object_git/", '
             '"project_git/"]}]}\n',
             MetaDataJSONFormatter().process(report))
 

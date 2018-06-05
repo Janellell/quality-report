@@ -341,9 +341,11 @@ class QualityReportMetricsTest(unittest.TestCase):
 
     def test_included_metric_source_classes(self):
         """ Test that the report gives a list of included metric source classes, based on the project's metric
-            source classes. """
-        project = domain.Project()
-        self.assertEqual(project.metric_source_classes(),
+            source classes and the project's domain objects' metric source classes. """
+        project = domain.Project(metric_sources={metric_source.TestReport: metric_source.JunitTestReport()})
+        document = domain.Document(metric_sources={metric_source.VersionControlSystem: metric_source.Git()})
+        project.add_document(document)
+        self.assertEqual({metric_source.TestReport, metric_source.VersionControlSystem},
                          report.QualityReport(project).included_metric_source_classes())
 
     def test_metric_class_units(self):

@@ -132,9 +132,12 @@ class QualityReport(domain.DomainObject):
         """ Return the requirements included in the report. """
         return self.__requirements.copy()
 
-    def included_metric_source_classes(self):
+    def included_metric_source_classes(self) -> Set[Type[domain.MetricSource]]:
         """ Return the metric classes actually configured in the project. """
-        return self.__project.metric_source_classes()
+        metric_source_classes = set(self.__project.metric_source_classes())
+        for domain_object in self.__project.domain_object_instances():
+            metric_source_classes.update(set(domain_object.metric_source_classes()))
+        return metric_source_classes
 
     def included_domain_object_classes(self) -> Set[Type[domain.DomainObject]]:
         """ Return the domain object classes actually configured in the project. """
