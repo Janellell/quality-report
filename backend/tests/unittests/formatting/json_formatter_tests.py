@@ -122,4 +122,3 @@ class MetaDataFormatterTest(unittest.TestCase):
             '"metric_sources": [{"included": true, "name": "Git", "id": "Git", "urls": ["domain_object_git/", '
             '"project_git/"]}]}\n',
             MetaDataJSONFormatter().process(report))
-
