@@ -16,6 +16,7 @@ limitations under the License.
 
 # Run the unit tests.
 
+import pathlib
 import io
 import logging
 import os
@@ -31,6 +32,10 @@ if __name__ == '__main__':  # pragma: no branch
     logging.getLogger().addHandler(logging.StreamHandler(io.StringIO()))
     # Run the unit test with the XML test runner so that the test output
     # can be processed by Sonar.
-    os.makedirs('build', exist_ok=True)
-    unittest.main(module=None, testRunner=xmlrunner.XMLTestRunner(output='build/unit-test-reports'),
-                  argv=[sys.argv[0], 'discover', '-s', 'tests/unittests', '-p', '*_tests.py'])
+    my_dir = pathlib.Path(__file__).resolve().parent
+    tests_dir = my_dir / 'unittests'
+    results_dir = my_dir.parent / "build" / "unit-test-reports"
+    results_dir.mkdir(parents=True, exist_ok=True)
+    unittest.main(module=None,
+                  testRunner=xmlrunner.XMLTestRunner(output=str(results_dir)),
+                  argv=[sys.argv[0], 'discover', '-s', str(tests_dir), '-p', '*_tests.py'])

@@ -16,6 +16,7 @@ limitations under the License.
 
 # Run the integration tests.
 
+import pathlib
 import io
 import logging
 import os
@@ -31,7 +32,14 @@ if __name__ == '__main__':  # pragma: no branch
     logging.getLogger().addHandler(logging.StreamHandler(io.StringIO()))
     # Run the unit test with the XML test runner so that the test output
     # can be processed by Sonar.
-    os.makedirs('build', exist_ok=True)
-    os.system('python3 setup.py bundle')
-    unittest.main(module=None, testRunner=xmlrunner.XMLTestRunner(output='build/integration-test-reports'),
-                  argv=[sys.argv[0], 'discover', '-s', 'integrationtests', '-p', '*_tests.py'])
+    my_dir = pathlib.Path(__file__).resolve().parent
+    setup = my_dir.parent / 'setup.py'
+
+    os.system(f"{sys.executable} {setup} bundle")
+
+    tests_dir = my_dir / 'integrationtests'
+    results_dir = my_dir.parent / "build" / "integration-test-reports"
+    results_dir.mkdir(parents=True, exist_ok=True)
+    unittest.main(module=None,
+                  testRunner=xmlrunner.XMLTestRunner(output=str(results_dir)),
+                  argv=[sys.argv[0], 'discover', '-s', str(tests_dir), '-p', '*_tests.py'])
