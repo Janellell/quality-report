@@ -19,7 +19,6 @@ limitations under the License.
 import pathlib
 import io
 import logging
-import os
 import sys
 import unittest
 
